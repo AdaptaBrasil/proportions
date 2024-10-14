@@ -39,5 +39,17 @@ x = names(result)
 # pai vai para a primeira linha do csv de saida
 # if vai para a segunda linha do csv de saida
 pai = as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x))
+pai = ifelse(duplicated(pai), NA, pai)
 id = as.numeric(gsub("X([0-9]+).*$", "\\1", x))
+
+result <- rbind(result, id)
+result <- rbind(result, pai)
+result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
+
+head(result)
+
+colnames(result) = c("id", idtocol(4:62))
+final <- mutate(result, across(paste0(idtocol(4:62)), as.character, "")) %>%
+  mutate(, across(paste0(idtocol(4:62)), tidyr::replace_na, ""))
+
 
