@@ -24,7 +24,8 @@ for(pai in pais){
     row_sum = rowSums(vfilhos)
   
     vfilhos <- vfilhos %>% 
-      mutate_all(~ ./row_sum)
+      mutate_all(~ ./row_sum) %>%
+      round(3)
   }
   else
     vfilhos[, 1] = 1
