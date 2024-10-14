@@ -1,7 +1,7 @@
 
 composicao <- read.csv("c:/Users/Usuario/Downloads/BSMoutcorre/composicao.csv", sep=";")
-composicao
 
+# convert from id to column name
 idtocol = function(id) paste0("X", id, ".2010")
 
 valores <- read.csv("c:/Users/Usuario/Downloads/BSMoutcorre/valores.csv", sep=";") %>%
@@ -40,7 +40,20 @@ x = names(result)
 # if vai para a segunda linha do csv de saida
 pai = as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x))
 pai = ifelse(duplicated(pai), NA, pai)
+
+nas = is.na(pai)
+pai = paste0(pai)
+pai[nas] = ""
+
 id = as.numeric(gsub("X([0-9]+).*$", "\\1", x))
+
+id = paste0(id, "-2010", sep = "")
+id[1] = ""
+
+colnames(result) = c("id", idtocol(4:62))
+
+result <- mutate(result, across(paste0(idtocol(4:62)), as.character, "")) %>%
+  mutate(, across(paste0(idtocol(4:62)), tidyr::replace_na, "DI"))
 
 result <- rbind(result, id)
 result <- rbind(result, pai)
@@ -48,8 +61,5 @@ result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
 
 head(result)
 
-colnames(result) = c("id", idtocol(4:62))
-final <- mutate(result, across(paste0(idtocol(4:62)), as.character, "")) %>%
-  mutate(, across(paste0(idtocol(4:62)), tidyr::replace_na, ""))
 
 
