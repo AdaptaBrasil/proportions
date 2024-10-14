@@ -42,13 +42,13 @@ pai = as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x))
 pai = ifelse(duplicated(pai), NA, pai)
 
 nas = is.na(pai)
-pai = paste0(pai)
+pai = paste0(pai, "-2010", sep = "")
 pai[nas] = ""
 
 id = as.numeric(gsub("X([0-9]+).*$", "\\1", x))
 
 id = paste0(id, "-2010", sep = "")
-id[1] = ""
+id[1] = "id"
 
 colnames(result) = c("id", idtocol(4:62))
 
@@ -59,8 +59,6 @@ result <- rbind(result, id)
 result <- rbind(result, pai)
 result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
 
-head(result)
-
-write.csv(result, "proporcionalidades.csv", row.names = FALSE, col.names = FALSE)
+write.table(result, "proporcionalidades.csv", row.names = FALSE, col.names = FALSE, sep="|")
 
 
