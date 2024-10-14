@@ -61,5 +61,6 @@ result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
 
 head(result)
 
+write.csv(result, "proporcionalidades.csv", row.names = FALSE, col.names = FALSE)
 
 
