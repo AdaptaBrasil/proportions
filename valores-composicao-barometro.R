@@ -34,4 +34,10 @@ for(pai in pais){
   result <- cbind(result, vfilhos)
 }
 
-head(result)
+x = names(result)
+
+# pai vai para a primeira linha do csv de saida
+# if vai para a segunda linha do csv de saida
+pai = as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x))
+id = as.numeric(gsub("X([0-9]+).*$", "\\1", x))
+
