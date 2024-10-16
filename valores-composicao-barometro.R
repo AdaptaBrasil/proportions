@@ -5,17 +5,28 @@
 # 20, 20 e 10, as proporcionalidades deles serao 0.4, 0.4 e 0.2,
 # respectivamente.
 
-pasta = "c:/Users/Usuario/Downloads/BSMoutcorre/"
-
-arquivo = function(nome) paste0(pasta, nome, sep = "")
 require(dplyr)
 
-composicao <- read.csv(arquivo("composicao.csv"), sep=";")
+pasta = "c:/Users/Usuario/Downloads/BSMoutcorre/"
+extensao = "csv"
+
+#pasta = "C:/Users/Usuario/Downloads/se_portos2609/"
+#extensao = "xlsx"
+
+arquivo = function(nome) paste0(pasta, nome, sep = "")
+
+if(extensao == "csv")
+  composicao <- read.csv(arquivo("composicao.csv"), sep = ";") else
+  composicao <- xlsx::read.xlsx(arquivo("composicao.xlsx"), 1)
 
 # convert from id to column name
 idtocol <- function(id) paste0("X", id, ".2010")
 
-valores <- read.csv(arquivo("valores.csv"), sep=";") %>%
+if(extensao == "csv")
+  valores <- read.csv(arquivo("valores.csv"), sep = ";") else
+  valores <- xlsx::read.xlsx(arquivo("valores.xlsx"), 1)
+
+valores <- valores %>%
   mutate(across(paste0(idtocol(2:62)), ~ stringr::str_replace(.x, "\\,", "."))) %>%
   mutate(across(paste0(idtocol(2:62)), as.numeric))
 
@@ -65,14 +76,11 @@ id[1] <- "id"
 colnames(result) <- c("id", idtocol(4:62))
 
 result <- mutate(result, across(paste0(idtocol(4:62)), ~as.character(.x, ""))) %>%
-  mutate(, across(paste0(idtocol(4:62)), tidyr::replace_na, "DI"))
+  mutate(, across(paste0(idtocol(4:62)), ~ tidyr::replace_na(.x, "DI")))
 
 result <- rbind(result, id)
 result <- rbind(result, pai)
 result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
 
 write.table(result, "proporcionalidades.csv", row.names = FALSE, col.names = FALSE, sep="|")
-View(result)
-
-install.packages("xlsx")
 xlsx::write.xlsx(result, "proporcionalidades.xls", row.names = FALSE, col.names = FALSE)
