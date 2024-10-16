@@ -5,13 +5,18 @@
 # 20, 20 e 10, as proporcionalidades deles serao 0.4, 0.4 e 0.2,
 # respectivamente.
 
-composicao <- read.csv("c:/Users/Usuario/Downloads/BSMoutcorre/composicao.csv", sep=";")
+pasta = "c:/Users/Usuario/Downloads/BSMoutcorre/"
+
+arquivo = function(nome) paste0(pasta, nome, sep = "")
+require(dplyr)
+
+composicao <- read.csv(arquivo("composicao.csv"), sep=";")
 
 # convert from id to column name
 idtocol <- function(id) paste0("X", id, ".2010")
 
-valores <- read.csv("c:/Users/Usuario/Downloads/BSMoutcorre/valores.csv", sep=";") %>%
-  mutate(across(paste0(idtocol(2:62)), stringr::str_replace, "\\,", ".")) %>%
+valores <- read.csv(arquivo("valores.csv"), sep=";") %>%
+  mutate(across(paste0(idtocol(2:62)), ~ stringr::str_replace(.x, "\\,", "."))) %>%
   mutate(across(paste0(idtocol(2:62)), as.numeric))
 
 result <- valores %>% dplyr::select(1)
@@ -45,21 +50,21 @@ x = names(result)
 
 # pai vai para a primeira linha do csv de saida
 # if vai para a segunda linha do csv de saida
-pai <- as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x))
+pai <- suppressWarnings(as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x)))
 pai <- ifelse(duplicated(pai), NA, pai)
 
 nas <- is.na(pai)
 pai <- paste0(pai, "-2010", sep = "")
 pai[nas] = ""
 
-id <- as.numeric(gsub("X([0-9]+).*$", "\\1", x))
+id <- suppressWarnings(as.numeric(gsub("X([0-9]+).*$", "\\1", x)))
 
 id <- paste0(id, "-2010", sep = "")
 id[1] <- "id"
 
 colnames(result) <- c("id", idtocol(4:62))
 
-result <- mutate(result, across(paste0(idtocol(4:62)), as.character, "")) %>%
+result <- mutate(result, across(paste0(idtocol(4:62)), ~as.character(.x, ""))) %>%
   mutate(, across(paste0(idtocol(4:62)), tidyr::replace_na, "DI"))
 
 result <- rbind(result, id)
@@ -67,3 +72,7 @@ result <- rbind(result, pai)
 result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
 
 write.table(result, "proporcionalidades.csv", row.names = FALSE, col.names = FALSE, sep="|")
+View(result)
+
+install.packages("xlsx")
+xlsx::write.xlsx(result, "proporcionalidades.xls", row.names = FALSE, col.names = FALSE)
