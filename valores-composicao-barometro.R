@@ -7,11 +7,12 @@
 
 require(dplyr)
 
-pasta = "c:/Users/Usuario/Downloads/BSMoutcorre/"
-extensao = "csv"
+#pasta = "c:/Users/Usuario/Downloads/BSMoutcorre/"
+#extensao = "csv"
 
-#pasta = "C:/Users/Usuario/Downloads/se_portos2609/"
-#extensao = "xlsx"
+pasta = "C:/Users/Usuario/Downloads/se_bio_1610/"
+extensao = "xlsx"
+year = 2017
 
 arquivo = function(nome) paste0(pasta, nome, sep = "")
 
@@ -20,21 +21,26 @@ if(extensao == "csv")
   composicao <- xlsx::read.xlsx(arquivo("composicao.xlsx"), 1)
 
 # convert from id to column name
-idtocol <- function(id) paste0("X", id, ".2010")
+idtocol <- function(id) paste0("X", id, ".", year)
 
 if(extensao == "csv")
   valores <- read.csv(arquivo("valores.csv"), sep = ";") else
   valores <- xlsx::read.xlsx(arquivo("valores.xlsx"), 1)
 
+# se os valores estiverem com virgula ao inves de ponto para 
+# delimitar casas decimais
 valores <- valores %>%
-  mutate(across(paste0(idtocol(2:62)), ~ stringr::str_replace(.x, "\\,", "."))) %>%
-  mutate(across(paste0(idtocol(2:62)), as.numeric))
+#  mutate(across(paste0(idtocol(2:62)), ~ stringr::str_replace(.x, "\\,", "."))) %>%
+  mutate(across(paste0(idtocol(2:35)), as.numeric)) %>%
+  replace(is.na(.), 0)
 
 result <- valores %>% dplyr::select(1)
 
 pais <- unique(composicao$codigo_pai)[-1]
+pais <- pais[!is.na(pais)]
 
 for(pai in pais){
+#  pai=pais[1]
   cat(paste0("Processing ", pai, "\n"))
 
   filhos <- composicao %>%
@@ -61,23 +67,33 @@ x = names(result)
 
 # pai vai para a primeira linha do csv de saida
 # if vai para a segunda linha do csv de saida
-pai <- suppressWarnings(as.numeric(gsub("X([0-9]+)\\.2010\\.([0-9]+).*$", "\\2", x)))
+str <- paste0("X([0-9]+)\\.", year, "\\.([0-9]+).*$")
+pai <- suppressWarnings(as.numeric(gsub(str, "\\2", x)))
 pai <- ifelse(duplicated(pai), NA, pai)
 
 nas <- is.na(pai)
-pai <- paste0(pai, "-2010", sep = "")
+pai <- paste0(pai, "-", year, sep = "")
 pai[nas] = ""
 
 id <- suppressWarnings(as.numeric(gsub("X([0-9]+).*$", "\\1", x)))
 
-id <- paste0(id, "-2010", sep = "")
+id <- paste0(id, "-", year, sep = "")
 id[1] <- "id"
 
-colnames(result) <- c("id", idtocol(4:62))
+colnames(result) <- c("id", idtocol(4:35))
 
-result <- mutate(result, across(paste0(idtocol(4:62)), ~as.character(.x, ""))) %>%
-  mutate(, across(paste0(idtocol(4:62)), ~ tidyr::replace_na(.x, "DI")))
+View(result)
 
+result <- result[, -34]
+
+result <- result %>%
+  replace(is.na(.), 0) %>%
+  mutate(result, across(paste0(idtocol(4:35)), ~as.character(.x, ""))) %>%
+  mutate(, across(paste0(idtocol(4:35)), ~ tidyr::replace_na(.x, "DI")))
+
+dim(result)
+id <- id[-34]
+pai <- pai[-34]
 result <- rbind(result, id)
 result <- rbind(result, pai)
 result <- rbind(tail(result, 2)[2:1, ], head(result, -2))
